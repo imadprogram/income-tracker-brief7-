@@ -28,4 +28,10 @@ expense_form_bg.addEventListener('click', () => {
 
 
 income_form.addEventListener('click', (e) => {e.stopPropagation()})  
-expense_form.addEventListener('click', (e) => {e.stopPropagation()})  
+expense_form.addEventListener('click', (e) => {e.stopPropagation()}) 
+
+
+document.addEventListener('click',(e)=>{
+    let clicked = e.target.closest('.parent')
+    console.log(clicked)
+})

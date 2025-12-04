@@ -52,6 +52,7 @@ if ($result_expense) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>tracker</title>
 </head>
 <style type="text/tailwindcss">
@@ -143,17 +144,17 @@ if ($result_expense) {
                 <div>
                     <p
                         class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-                        both balance
+                        sold balance
                     </p>
                     <p
                         class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                        $ 0,00
+                        $ <?php echo $income_total - $expense_total + 0 ?>
                     </p>
                 </div>
             </div>
         </div>
         <!-- lists section -->
-        <div class="flex gap-30">
+        <div class="flex gap-30"> 
             <!-- New Table -->
             <div class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
                 <div class="w-full overflow-x-auto">
@@ -166,24 +167,26 @@ if ($result_expense) {
                             </tr>
                         </thead>
                         <tbody
-                            class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                            class=" divide-y divide-gray-700 bg-gray-800">
                             <?php
                             $incomes = "SELECT * FROM income";
                             $the_result = mysqli_query($connect, $incomes);
                             if (mysqli_num_rows($the_result) > 0) {
                                 while ($row = mysqli_fetch_assoc($the_result)) {
                                     echo "
-                                        <tr class='text-white'>
+                                        <tr data-id=".$row['id']." class='text-white parent'>
                                             <td class='px-4 py-3 text-sm'>
                                                 $ " . $row['amount'] . "
                                             </td>
-                                            <td class='px-4 py-3 text-sm'> 
+                                            <td class='px-4 py-3 text-sm flex justify-between'> 
                                                 " . $row['date'] . "
+                                                <i class='fa-solid fa-pen'></i>
+                                                <i class='fa-solid fa-trash text-red-500    '></i>
                                             </td>
-                                            </tr>
+                                        </tr>
                                     ";
                                 }
-                            }else{
+                            } else {
                                 echo "<h2 class='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-gray-300 text-lg'>there is nothing to show</h2>";
                             }
                             ?>
@@ -221,7 +224,7 @@ if ($result_expense) {
                                             </tr>
                                     ";
                                 }
-                            }else{
+                            } else {
                                 echo "<h2 class='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-gray-300 text-lg'>there is nothing to show</h2>";
                             }
                             ?>
