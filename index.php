@@ -9,6 +9,7 @@ if (isset($_POST["income-submit"])) {
         $description = mysqli_real_escape_string($connect, $_POST["income-description"]);
         $date = empty($_POST["income-date"]) ? date('y-m-d') : mysqli_real_escape_string($connect, $_POST["income-date"]);
         $sql_insert = "INSERT INTO income (amount , description,  date) VALUES({$amount}, '{$description}', '{$date}')";
+
         mysqli_query($connect, $sql_insert);
     } catch (mysqli_sql_exception $e) {
         echo $e->getMessage();
@@ -20,6 +21,7 @@ if (isset($_POST["expense-submit"])) {
         $description = mysqli_real_escape_string($connect, $_POST["expense-description"]);
         $date = empty($_POST["expense-date"]) ? date('y-m-d') : mysqli_real_escape_string($connect, $_POST["expense-date"]);
         $sql_insert = "INSERT INTO expense (amount , description,  date) VALUES({$amount}, '{$description}', '{$date}')";
+
         mysqli_query($connect, $sql_insert);
     } catch (mysqli_sql_exception $e) {
         echo $e->getMessage();
@@ -45,25 +47,40 @@ if ($result_expense) {
 }
 
 // update infos of income
-    if(!empty($_POST['income-new-submit'])){
-        $amount = $_POST['income-new-amount'];
-        $description = $_POST['income-new-description'];
-        $date = $_POST['income-new-date'];
-        $id = $_POST['id'];
-        $sql = "UPDATE income SET amount = $amount WHERE id = $id";
+if (!empty($_POST['income-new-submit'])) {
+    $amount = $_POST['income-new-amount'];
+    $description = $_POST['income-new-description'];
+    $date = $_POST['income-new-date'];
+    $id = $_POST['id'];
+    $sql = "UPDATE income SET amount = $amount WHERE id = $id";
 
-        mysqli_query($connect, $sql);
-    }
+    mysqli_query($connect, $sql);
+}
 // update infos of expense
-    if(!empty($_POST['expense-new-submit'])){
-        $amount = $_POST['expense-new-amount'];
-        $description = $_POST['expense-new-description'];
-        $date = $_POST['expense-new-date'];
-        $id = $_POST['id'];
-        $sql = "UPDATE expense SET amount = $amount WHERE id = $id";
+if (!empty($_POST['expense-new-submit'])) {
+    $amount = $_POST['expense-new-amount'];
+    $description = $_POST['expense-new-description'];
+    $date = $_POST['expense-new-date'];
+    $id = $_POST['id'];
+    $sql = "UPDATE expense SET amount = $amount WHERE id = $id";
 
-        mysqli_query($connect, $sql);
-    }
+    mysqli_query($connect, $sql);
+}
+
+// delete infos of income
+if (!empty($_POST['income-delete'])) {
+    $id = $_POST['id'];
+    $sql = "DELETE FROM income WHERE id = $id";
+
+    mysqli_query($connect, $sql);
+}
+// delete infos of expense
+if (!empty($_POST['expense-delete'])) {
+    $id = $_POST['id'];
+    $sql = "DELETE FROM expense WHERE id = $id";
+
+    mysqli_query($connect, $sql);
+}
 
 ?>
 <!DOCTYPE html>
@@ -73,7 +90,8 @@ if ($result_expense) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://kit.fontawesome.com/559afa4763.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>tracker</title>
 </head>
 <style type="text/tailwindcss">
@@ -168,14 +186,14 @@ if ($result_expense) {
                         sold balance
                     </p>
                     <p
-                        class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                        class="text-2xl font-bold text-gray-700 dark:text-gray-200">
                         $ <?php echo $income_total - $expense_total + 0 ?>
                     </p>
                 </div>
             </div>
         </div>
         <!-- lists section -->
-        <div class="flex gap-30"> 
+        <div class="flex gap-30">
             <!-- incomes Table -->
             <div id="incomes" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
                 <div class="w-full overflow-x-auto">
@@ -190,17 +208,17 @@ if ($result_expense) {
                         <tbody
                             class=" divide-y divide-gray-700 bg-gray-800">
                             <?php
-                            $incomes = "SELECT * FROM income";
+                            $incomes = "SELECT * FROM income WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE)";
                             $the_result = mysqli_query($connect, $incomes);
                             if (mysqli_num_rows($the_result) > 0) {
                                 while ($row = mysqli_fetch_assoc($the_result)) {
                                     echo "
-                                        <tr data-id=".$row['id']." class='text-white element'>
+                                        <tr data-id=" . $row['id'] . " class='text-white element'>
                                             <td class='px-4 py-3 text-sm'>
                                                 $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
                                             </td>
                                             <td class='px-4 py-3 text-sm flex justify-between'> 
-                                                " . $row['date'] . "
+                                                <p>" . $row['date'] . "</p>
                                                 <i class='fa-solid fa-pen edit cursor-pointer'></i>
                                                 <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
                                             </td>
@@ -230,16 +248,16 @@ if ($result_expense) {
                         <tbody
                             class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
                             <?php
-                            $expenses = "SELECT * FROM expense";
+                            $expenses = "SELECT * FROM expense WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE)";
                             $the_result = mysqli_query($connect, $expenses);
                             if (mysqli_num_rows($the_result) > 0) {
                                 while ($row = mysqli_fetch_assoc($the_result)) {
                                     echo "
-                                        <tr data-id=".$row['id']." class='text-white element'>
+                                        <tr data-id=" . $row['id'] . " class='text-white element'>
                                             <td class='px-4 py-3 text-sm'>
                                                 $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
                                             </td>
-                                            <td class='px-4 py-3 text-sm flex justify-between'> 
+                                            <td class='px-4 py-3 text-sm flex justify-between dates'> 
                                                 " . $row['date'] . "
                                                 <i class='fa-solid fa-pen edit cursor-pointer'></i>
                                                 <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
@@ -258,7 +276,12 @@ if ($result_expense) {
             </div>
         </div>
     </section>
-    <section>
+    <!-- chart js section -->
+    <section class="bg-black">
+        <h1 class="text-center font-bold text-3xl text-white py-16">Statistics</h1>
+        <div class="h-80 px-16">
+            <canvas id="myChart"></canvas>
+        </div>
     </section>
     <!-- income form -->
     <div class="income-form-bg  hidden  bg-[rgba(0,0,0,.1)] fixed backdrop-blur-sm w-full h-[100vh] flex justify-center items-center top-0">
@@ -284,6 +307,7 @@ if ($result_expense) {
             <input type="submit" name="expense-submit" class="bg-green-400 rounded-lg w-80 py-2 text-white">
         </form>
     </div>
+
 </body>
 <script src="script.js"></script>
 

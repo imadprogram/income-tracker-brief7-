@@ -10,6 +10,7 @@ CREATE TABLE income(
 );
 TRUNCATE income;
 TRUNCATE expense;
+TRUNCATE income;
 
 SELECT sum(amount) FROM income;
 
@@ -25,3 +26,12 @@ CREATE TABLE expense(
     description VARCHAR(250) ,
     date DATE DEFAULT (CURRENT_DATE)
 );
+
+SELECT * FROM income;
+INSERT INTO income (id , amount , description , date) VALUES (1, 33 , 'test', '2007-04-22');
+INSERT INTO income ( amount , description ) VALUES ( 33 , 'test');
+
+DELETE FROM INCOME WHERE id = 2;
+
+SELECT * FROM income WHERE MONTH(date)  = MONTH(CURRENT_DATE)
+
