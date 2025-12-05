@@ -44,6 +44,27 @@ if ($result_expense) {
     $expense_total = $row['total_expense'];
 }
 
+// update infos of income
+    if(!empty($_POST['income-new-submit'])){
+        $amount = $_POST['income-new-amount'];
+        $description = $_POST['income-new-description'];
+        $date = $_POST['income-new-date'];
+        $id = $_POST['id'];
+        $sql = "UPDATE income SET amount = $amount WHERE id = $id";
+
+        mysqli_query($connect, $sql);
+    }
+// update infos of expense
+    if(!empty($_POST['expense-new-submit'])){
+        $amount = $_POST['expense-new-amount'];
+        $description = $_POST['expense-new-description'];
+        $date = $_POST['expense-new-date'];
+        $id = $_POST['id'];
+        $sql = "UPDATE expense SET amount = $amount WHERE id = $id";
+
+        mysqli_query($connect, $sql);
+    }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,8 +176,8 @@ if ($result_expense) {
         </div>
         <!-- lists section -->
         <div class="flex gap-30"> 
-            <!-- New Table -->
-            <div class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
+            <!-- incomes Table -->
+            <div id="incomes" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
                 <div class="w-full overflow-x-auto">
                     <table class="w-full whitespace-no-wrap">
                         <thead>
@@ -174,14 +195,14 @@ if ($result_expense) {
                             if (mysqli_num_rows($the_result) > 0) {
                                 while ($row = mysqli_fetch_assoc($the_result)) {
                                     echo "
-                                        <tr data-id=".$row['id']." class='text-white parent'>
+                                        <tr data-id=".$row['id']." class='text-white element'>
                                             <td class='px-4 py-3 text-sm'>
-                                                $ " . $row['amount'] . "
+                                                $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
                                             </td>
                                             <td class='px-4 py-3 text-sm flex justify-between'> 
                                                 " . $row['date'] . "
-                                                <i class='fa-solid fa-pen'></i>
-                                                <i class='fa-solid fa-trash text-red-500    '></i>
+                                                <i class='fa-solid fa-pen edit cursor-pointer'></i>
+                                                <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
                                             </td>
                                         </tr>
                                     ";
@@ -195,8 +216,8 @@ if ($result_expense) {
                     </table>
                 </div>
             </div>
-            <!-- New Table -->
-            <div class="w-full overflow-hidden rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
+            <!-- expenses Table -->
+            <div id="expenses" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
                 <div class="w-full overflow-x-auto">
                     <table class="w-full whitespace-no-wrap">
                         <thead>
@@ -214,12 +235,14 @@ if ($result_expense) {
                             if (mysqli_num_rows($the_result) > 0) {
                                 while ($row = mysqli_fetch_assoc($the_result)) {
                                     echo "
-                                        <tr class='text-white'>
+                                        <tr data-id=".$row['id']." class='text-white element'>
                                             <td class='px-4 py-3 text-sm'>
-                                                $ " . $row['amount'] . "
+                                                $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
                                             </td>
-                                            <td class='px-4 py-3 text-sm'> 
+                                            <td class='px-4 py-3 text-sm flex justify-between'> 
                                                 " . $row['date'] . "
+                                                <i class='fa-solid fa-pen edit cursor-pointer'></i>
+                                                <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
                                             </td>
                                             </tr>
                                     ";
