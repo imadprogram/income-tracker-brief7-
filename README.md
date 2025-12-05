@@ -80,7 +80,7 @@ Ce README résume les user stories, les fonctionnalités développées et la str
 
 ## 🖼️ Use Case Diagram
 
-Ajoutez ici votre **[diagramme de cas d'utilisation](https://lucid.app/lucidchart/04668aad-a5eb-474c-a344-1c18ef6b6adf/edit?viewport_loc=401%2C666%2C1015%2C454%2C.Q4MUjXso07N&invitationId=inv_4b0f84a3-e795-4a94-ae8a-3625f3c7c3e7)** :
+ **[diagramme de cas d'utilisation](https://lucid.app/lucidchart/04668aad-a5eb-474c-a344-1c18ef6b6adf/edit?viewport_loc=401%2C666%2C1015%2C454%2C.Q4MUjXso07N&invitationId=inv_4b0f84a3-e795-4a94-ae8a-3625f3c7c3e7)** 
 
 
 ---
