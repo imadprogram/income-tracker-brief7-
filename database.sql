@@ -9,8 +9,8 @@ CREATE TABLE income(
     date DATE DEFAULT (CURRENT_DATE)
 );
 TRUNCATE income;
+
 TRUNCATE expense;
-TRUNCATE income;
 
 SELECT sum(amount) FROM income;
 

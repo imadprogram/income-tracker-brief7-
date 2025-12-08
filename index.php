@@ -92,6 +92,7 @@ if (!empty($_POST['expense-delete'])) {
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://kit.fontawesome.com/559afa4763.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <title>tracker</title>
 </head>
 <style type="text/tailwindcss">
@@ -287,9 +288,9 @@ if (!empty($_POST['expense-delete'])) {
     <div class="income-form-bg  hidden  bg-[rgba(0,0,0,.1)] fixed backdrop-blur-sm w-full h-[100vh] flex justify-center items-center top-0">
         <form action="index.php" method="post" class="top-1/2 left-1/2  bg-white shadow-xl rounded-lg px-6 py-4 flex flex-col gap-1">
             <label>amount:</label>
-            <input type="text" name="income-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
+            <input required type="text" name="income-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <label>description:</label>
-            <input type="text" name="income-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
+            <input required type="text" name="income-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <label>date:</label>
             <input type="date" name="income-date" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <input type="submit" name="income-submit" class="bg-green-400 rounded-lg w-80 py-2 text-white">
@@ -299,15 +300,43 @@ if (!empty($_POST['expense-delete'])) {
     <div class="expense-form-bg  hidden  bg-[rgba(0,0,0,.1)] fixed backdrop-blur-sm w-full h-[100vh] flex justify-center items-center top-0">
         <form action="index.php" method="post" class="top-1/2 left-1/2  bg-white shadow-xl rounded-lg px-6 py-4 flex flex-col gap-1">
             <label>amount:</label>
-            <input type="text" name="expense-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
+            <input required type="text" name="expense-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <label>description:</label>
-            <input type="text" name="expense-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
+            <input required type="text" name="expense-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <label>date:</label>
             <input type="date" name="expense-date" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
             <input type="submit" name="expense-submit" class="bg-green-400 rounded-lg w-80 py-2 text-white">
         </form>
     </div>
 
+    <?php
+    // 1. Re-run queries to fetch all records for the current month
+    // You need ID, amount, and date for the chart to work correctly.
+    $income_chart_sql = "SELECT id, amount, date FROM income WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE) ORDER BY date ASC";
+    $expense_chart_sql = "SELECT id, amount, date FROM expense WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE) ORDER BY date ASC";
+
+    $income_chart_result = mysqli_query($connect, $income_chart_sql);
+    $expense_chart_result = mysqli_query($connect, $expense_chart_sql);
+
+    $income_chart_data = [];
+    while ($row = mysqli_fetch_assoc($income_chart_result)) {
+        // Collect data, ensuring 'amount' is treated as a number in JS
+        $income_chart_data[] = ['date' => $row['date'], 'amount' => (float)$row['amount']];
+    }
+
+    $expense_chart_data = [];
+    while ($row = mysqli_fetch_assoc($expense_chart_result)) {
+        $expense_chart_data[] = ['date' => $row['date'], 'amount' => (float)$row['amount']];
+    }
+
+    // 2. Encode PHP arrays to JSON strings
+    $json_incomes = json_encode($income_chart_data);
+    $json_expenses = json_encode($expense_chart_data);
+    ?>
+    <script>
+        const incomeDataFromPHP = <?php echo $json_incomes; ?>;
+        const expenseDataFromPHP = <?php echo $json_expenses; ?>;
+    </script>
 </body>
 <script src="script.js"></script>
 

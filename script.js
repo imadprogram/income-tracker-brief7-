@@ -144,57 +144,104 @@ bin.forEach(b => {
 })
 
 
-let rows = document.querySelectorAll('.element')
-
-rows.
-
-console.log(dates)
 
 
+// ... (Your existing UI logic: income_btn listeners, edit/bin handlers) ...
 
 // chart js
+const ctx = document.getElementById("myChart");
 
-const ctx = document.getElementById('myChart');
+// **Accessing Data from PHP**
+const incomeData = incomeDataFromPHP;
+const expenseData = expenseDataFromPHP;
+
+// Helper function to process data and ensure sorting by date
+const prepareChartData = (data) => {
+    // Sort data by date
+    data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return data; 
+};
+
+// Process data to ensure they are sorted
+const processedIncomeData = prepareChartData(incomeData);
+const processedExpenseData = prepareChartData(expenseData);
+
+
+// Combine all unique dates for the X-axis labels (ensures both datasets align)
+const allDates = [
+    ...new Set([
+        ...processedIncomeData.map(d => d.date), 
+        ...processedExpenseData.map(d => d.date)
+    ])
+];
+allDates.sort((a, b) => new Date(a) - new Date(b));
+
+// Format dates nicely for the labels
+const chartLabels = allDates.map(date => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+
+// Function to map amounts to the combined dates, using 0 if no transaction occurred on that day
+const mapAmountsToLabels = (rawData, allDates) => {
+    const amountMap = new Map(rawData.map(item => [item.date, item.amount]));
+    return allDates.map(date => amountMap.get(date) || 0); 
+};
+
+const incomeChartData = mapAmountsToLabels(processedIncomeData, allDates);
+const expenseChartData = mapAmountsToLabels(processedExpenseData, allDates);
+
 
 new Chart(ctx, {
     type: 'line',
     data: {
-        labels: ['2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],  
-        // You will replace these with the dates from JS
-        datasets: [{
-            label: 'Money',
-            data: [200, 350, 500, 250],  
-            // You will replace these with amounts from JS
-            borderColor: '#4ADE80',
-            backgroundColor: 'rgba(74, 222, 128, 0.3)',
-            borderWidth: 3,
-            tension: 0.3,   // Smooth line
-            pointRadius: 5,
-            pointBackgroundColor: '#4ADE80'
-        }]
+        labels: chartLabels, // Use the combined, sorted unique dates
+        datasets: [
+            {
+                label: 'Income',
+                data: incomeChartData,
+                borderColor: '#10B981', // Green-500
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+            },
+            {
+                label: 'Expense',
+                data: expenseChartData,
+                borderColor: '#EF4444', // Red-500
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+            }
+        ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-            x: {
-                ticks: {
-                    color: 'white',
-                    font: { size: 16 }
-                },
-                grid: {
-                    color: 'rgba(255,255,255,0.3)'
-                }
-            },
             y: {
                 beginAtZero: true,
-                ticks: {
-                    color: 'white',
-                    font: { size: 16 }
-                },
-                grid: {
-                    color: 'rgba(255,255,255,0.3)'
+                title: {
+                    display: true,
+                    text: 'Amount ($)'
                 }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                },
+                type: 'category',
+                labels: chartLabels
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Monthly Income vs. Expense Trend'
             }
         }
     }
