@@ -115,7 +115,7 @@ if (!empty($_POST['expense-delete'])) {
 
     <header class="bg-gray-900 text-3xl font-bold pl-9 py-3 text-white">Smart Wallet</header>
     <section class="pt-3 bg-black pb-10 flex flex-col gap-8 px-12">
-        <div class="flex  justify-between">
+        <div class="flex flex-wrap gap-5 justify-between">
             <h1 class="text-4xl font-bold text-white">Dashboard<br><span class="text-sm font-sans text-gray-500">manage you spends in one page.</span></h1>
             <div>
                 <button id="income-btn" class="cursor-pointer px-6 py-2 rounded-full text-white bg-[linear-gradient(to_top,#52c234,#061700)]">Add income</button>
@@ -123,7 +123,7 @@ if (!empty($_POST['expense-delete'])) {
             </div>
         </div>
         <!-- cards -->
-        <div class="flex gap-30 px-24 pt-4">
+        <div class="flex flex-wrap gap-5 md:gap-30 md:px-24 pt-4">
             <div
                 class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 grow">
                 <div
@@ -194,7 +194,7 @@ if (!empty($_POST['expense-delete'])) {
             </div>
         </div>
         <!-- lists section -->
-        <div class="flex gap-30">
+        <div class="flex flex-wrap md:flex-nowrap gap-30">
             <!-- incomes Table -->
             <div id="incomes" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
                 <div class="w-full overflow-x-auto">
@@ -280,7 +280,7 @@ if (!empty($_POST['expense-delete'])) {
     <!-- chart js section -->
     <section class="bg-black">
         <h1 class="text-center font-bold text-3xl text-white py-16">Statistics</h1>
-        <div class="h-80 px-16">
+        <div class="h-80 md:px-16">
             <canvas id="myChart"></canvas>
         </div>
     </section>
