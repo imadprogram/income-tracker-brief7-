@@ -282,6 +282,7 @@ if (!empty($_POST['expense-delete'])) {
         <h1 class="text-center font-bold text-3xl text-white py-16">Statistics</h1>
         <div class="h-80 md:px-16">
             <canvas id="myChart"></canvas>
+            
         </div>
     </section>
     <!-- income form -->
