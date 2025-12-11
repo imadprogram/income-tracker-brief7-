@@ -1,85 +1,50 @@
 <?php
-include("connect.php");
+include('connect.php')
 ?>
 <?php
+session_start();
+// Login form
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['login'])) {
+        $email = $_POST['already-email'];
+        $password = $_POST['already-pass'];
+        $sql = "SELECT * FROM users WHERE email = '$email'";
+        $result = mysqli_query($connect, $sql);
+        if (mysqli_num_rows($result) == 1) {
+            $row = mysqli_fetch_assoc($result);
+            if (password_verify($password, $row['password'])) {
+                $_SESSION['user-id'] = $row['id'];
+                header('Location: dashboard.php');
+            } else {
+                echo 'pass is wrong';
+            }
+        } else {
+            echo 'there is no email like that';
+        }
+    } else if (isset($_POST['signup'])) {
+        $name = $_POST['user-name'];
+        $email = $_POST['user-email'];
+        $password = $_POST['user-pass'];
+        $hash = password_hash($password, PASSWORD_DEFAULT);
 
-if (isset($_POST["income-submit"])) {
-    try {
-        $amount = mysqli_real_escape_string($connect, $_POST["income-amount"]);
-        $description = mysqli_real_escape_string($connect, $_POST["income-description"]);
-        $date = empty($_POST["income-date"]) ? date('y-m-d') : mysqli_real_escape_string($connect, $_POST["income-date"]);
-        $sql_insert = "INSERT INTO income (amount , description,  date) VALUES({$amount}, '{$description}', '{$date}')";
+        $search = mysqli_query($connect, "SELECT * FROM users WHERE email = '$email'");
 
-        mysqli_query($connect, $sql_insert);
-    } catch (mysqli_sql_exception $e) {
-        echo $e->getMessage();
+        if (mysqli_num_rows($search) == 1) {
+            echo 'the email is already in use';
+        } else {
+            $sql = "INSERT INTO users(name , email, password) VALUES('$name', '$email','$hash')";
+            mysqli_query($connect, $sql);
+
+            // gets you the current id of the operation u did , so the last id has inserted
+            $new_id = mysqli_insert_id($connect);
+
+            $_SESSION['user-id'] = $new_id;
+
+            header('Location: dashboard.php');
+
+            echo 'you are now registered';
+        }
     }
-}
-if (isset($_POST["expense-submit"])) {
-    try {
-        $amount = mysqli_real_escape_string($connect, $_POST["expense-amount"]);
-        $description = mysqli_real_escape_string($connect, $_POST["expense-description"]);
-        $date = empty($_POST["expense-date"]) ? date('y-m-d') : mysqli_real_escape_string($connect, $_POST["expense-date"]);
-        $sql_insert = "INSERT INTO expense (amount , description,  date) VALUES({$amount}, '{$description}', '{$date}')";
-
-        mysqli_query($connect, $sql_insert);
-    } catch (mysqli_sql_exception $e) {
-        echo $e->getMessage();
-    }
-}
-// income total amount
-$income_sum = "SELECT sum(amount) AS total_income FROM income";
-
-$result_income = mysqli_query($connect, $income_sum);
-$income_total = 0;
-if ($result_income) {
-    $row = mysqli_fetch_assoc($result_income);
-    $income_total = $row['total_income'];
-}
-// expense total amount
-$expense_sum = "SELECT sum(amount) AS total_expense FROM expense";
-
-$result_expense = mysqli_query($connect, $expense_sum);
-$expense_total = 0;
-if ($result_expense) {
-    $row = mysqli_fetch_assoc($result_expense);
-    $expense_total = $row['total_expense'];
-}
-
-// update infos of income
-if (!empty($_POST['income-new-submit'])) {
-    $amount = $_POST['income-new-amount'];
-    $description = $_POST['income-new-description'];
-    $date = $_POST['income-new-date'];
-    $id = $_POST['id'];
-    $sql = "UPDATE income SET amount = $amount WHERE id = $id";
-
-    mysqli_query($connect, $sql);
-}
-// update infos of expense
-if (!empty($_POST['expense-new-submit'])) {
-    $amount = $_POST['expense-new-amount'];
-    $description = $_POST['expense-new-description'];
-    $date = $_POST['expense-new-date'];
-    $id = $_POST['id'];
-    $sql = "UPDATE expense SET amount = $amount WHERE id = $id";
-
-    mysqli_query($connect, $sql);
-}
-
-// delete infos of income
-if (!empty($_POST['income-delete'])) {
-    $id = $_POST['id'];
-    $sql = "DELETE FROM income WHERE id = $id";
-
-    mysqli_query($connect, $sql);
-}
-// delete infos of expense
-if (!empty($_POST['expense-delete'])) {
-    $id = $_POST['id'];
-    $sql = "DELETE FROM expense WHERE id = $id";
-
-    mysqli_query($connect, $sql);
 }
 
 ?>
@@ -90,258 +55,56 @@ if (!empty($_POST['expense-delete'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://kit.fontawesome.com/559afa4763.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <title>tracker</title>
-</head>
-<style type="text/tailwindcss">
-    @theme {
-        --color-clifford: #da373d;
-      }
 
-      @keyframes form-animation {
-        from{
-            opacity: 0;
-            transform: translateY(-30px);
-        }to{
-            transform: translateY(0);
-            opacity: 1;
-        }
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <title>Document</title>
+</head>
 
 <body>
+    <section class="w-full h-svh flex justify-center items-center bg-[url('img/money.jpg')] bg-cover">
+        <div class="forms-wrapper [font-family:'Poppins']">
 
-    <header class="bg-gray-900 text-3xl font-bold pl-9 py-3 text-white">Smart Wallet</header>
-    <section class="pt-3 bg-black pb-10 flex flex-col gap-8 px-12">
-        <div class="flex flex-wrap gap-5 justify-between">
-            <h1 class="text-4xl font-bold text-white">Dashboard<br><span class="text-sm font-sans text-gray-500">manage you spends in one page.</span></h1>
-            <div>
-                <button id="income-btn" class="cursor-pointer px-6 py-2 rounded-full text-white bg-[linear-gradient(to_top,#52c234,#061700)]">Add income</button>
-                <button id="expense-btn" class="cursor-pointer px-6 py-2 rounded-full border-2 text-white border-green-700">Add expense</button>
-            </div>
-        </div>
-        <!-- cards -->
-        <div class="flex flex-wrap gap-5 md:gap-30 md:px-24 pt-4">
-            <div
-                class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 grow">
-                <div
-                    class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            fill-rule="evenodd"
-                            d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p
-                        class="mb-2 text-md font-medium text-gray-600 dark:text-gray-400">
-                        income balance
-                    </p>
-                    <p
-                        class="text-2xl font-bold text-gray-700 dark:text-gray-200">
-                        $ <?php echo $income_total + 0 ?>
-                    </p>
-                </div>
-            </div>
-            <!-- card -->
-            <div
-                class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 grow">
-                <div
-                    class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            fill-rule="evenodd"
-                            d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p
-                        class="mb-2 text-md font-medium text-gray-600 dark:text-gray-400">
-                        expense balance
-                    </p>
-                    <p
-                        class="text-2xl font-bold text-gray-700 dark:text-gray-200">
-                        $ <?php echo $expense_total + 0 ?>
-                    </p>
-                </div>
-            </div>
-            <!-- card -->
-            <div
-                class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 grow">
-                <div
-                    class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            fill-rule="evenodd"
-                            d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p
-                        class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-                        sold balance
-                    </p>
-                    <p
-                        class="text-2xl font-bold text-gray-700 dark:text-gray-200">
-                        $ <?php echo $income_total - $expense_total + 0 ?>
-                    </p>
-                </div>
-            </div>
-        </div>
-        <!-- lists section -->
-        <div class="flex flex-wrap md:flex-nowrap gap-30">
-            <!-- incomes Table -->
-            <div id="incomes" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
-                <div class="w-full overflow-x-auto">
-                    <table class="w-full whitespace-no-wrap">
-                        <thead>
-                            <tr
-                                class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                                <th class="px-4 py-3">Amount</th>
-                                <th class="px-4 py-3">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            class=" divide-y divide-gray-700 bg-gray-800">
-                            <?php
-                            $incomes = "SELECT * FROM income WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE)";
-                            $the_result = mysqli_query($connect, $incomes);
-                            if (mysqli_num_rows($the_result) > 0) {
-                                while ($row = mysqli_fetch_assoc($the_result)) {
-                                    echo "
-                                        <tr data-id=" . $row['id'] . " class='text-white element'>
-                                            <td class='px-4 py-3 text-sm'>
-                                                $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
-                                            </td>
-                                            <td class='px-4 py-3 text-sm flex justify-between'> 
-                                                <p>" . $row['date'] . "</p>
-                                                <i class='fa-solid fa-pen edit cursor-pointer'></i>
-                                                <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
-                                            </td>
-                                        </tr>
-                                    ";
-                                }
-                            } else {
-                                echo "<h2 class='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-gray-300 text-lg'>there is nothing to show</h2>";
-                            }
-                            ?>
+            <!-- Login form -->
 
-                        </tbody>
-                    </table>
+            <form id="login-form" method="post" action="index.php" class="flex flex-col gap-10 shadow-xl w-fit px-10 py-7 rounded-lg items-center bg-white ">
+                <h1 class="text-green-600 text-3xl">LOGIN</h1>
+                <div class="flex flex-col">
+                    <label for="">Email:</label>
+                    <input required name="already-email" type="email" placeholder="someone@domain" class="pl-4 w-72 h-10 rounded-lg bg-gray-300">
                 </div>
-            </div>
-            <!-- expenses Table -->
-            <div id="expenses" class="w-full overflow-y-scroll [scrollbar-width:none] rounded-lg shadow-xs h-80 bg-gray-700 text-white relative">
-                <div class="w-full overflow-x-auto">
-                    <table class="w-full whitespace-no-wrap">
-                        <thead>
-                            <tr
-                                class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                                <th class="px-4 py-3">Amount</th>
-                                <th class="px-4 py-3">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-                            <?php
-                            $expenses = "SELECT * FROM expense WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE)";
-                            $the_result = mysqli_query($connect, $expenses);
-                            if (mysqli_num_rows($the_result) > 0) {
-                                while ($row = mysqli_fetch_assoc($the_result)) {
-                                    echo "
-                                        <tr data-id=" . $row['id'] . " class='text-white element'>
-                                            <td class='px-4 py-3 text-sm'>
-                                                $ <span class='text-green-500 font-semibold'>" . $row['amount'] . "</span>
-                                            </td>
-                                            <td class='px-4 py-3 text-sm flex justify-between dates'> 
-                                                " . $row['date'] . "
-                                                <i class='fa-solid fa-pen edit cursor-pointer'></i>
-                                                <i class='fa-solid fa-trash text-red-500 cursor-pointer bin'></i>
-                                            </td>
-                                            </tr>
-                                    ";
-                                }
-                            } else {
-                                echo "<h2 class='absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-gray-300 text-lg'>there is nothing to show</h2>";
-                            }
-                            ?>
+                <div class="flex flex-col">
+                    <label for="">Password:</label>
+                    <input required name="already-pass" type="password" placeholder="your password" class="pl-4 w-72 h-10 rounded-lg bg-gray-300">
+                </div>
+                <input name="login" type="submit" value="Login" class="w-72 h-10 rounded-lg bg-green-600 text-white cursor-pointer">
+                <p>don't have an account? <span class="text-blue-500 cursor-pointer">Register</span></p>
+            </form>
 
-                        </tbody>
-                    </table>
+            <!-- Register form -->
+
+            <form id="register-form" method="post" action="index.php" class="flex flex-col gap-10 shadow-xl w-fit px-10 py-7 rounded-lg items-center bg-white hidden">
+                <h1 class="text-green-600 text-3xl">SIGN UP</h1>
+                <div class="flex flex-col">
+                    <label for="">Name:</label>
+                    <input required name="user-name" type="text" placeholder="john doe" class="pl-4 w-72 h-10 rounded-lg bg-gray-300">
                 </div>
-            </div>
+                <div class="flex flex-col">
+                    <label for="">Email:</label>
+                    <input required name="user-email" type="email" placeholder="someone@domain" class="pl-4 w-72 h-10 rounded-lg bg-gray-300">
+                </div>
+                <div class="flex flex-col">
+                    <label for="">Password:</label>
+                    <input required name="user-pass" type="password" placeholder="your password" class="pl-4 w-72 h-10 rounded-lg bg-gray-300">
+                </div>
+                <input name="signup" type="submit" value="Sign up" class="w-72 h-10 rounded-lg bg-green-600 text-white cursor-pointer">
+                <p>Aleady have an account? <span class="text-blue-500 cursor-pointer">Login</span></p>
+            </form>
         </div>
     </section>
-    <!-- chart js section -->
-    <section class="bg-black">
-        <h1 class="text-center font-bold text-3xl text-white py-16">Statistics</h1>
-        <div class="h-80 md:px-16">
-            <canvas id="myChart"></canvas>
-            
-        </div>
-    </section>
-    <!-- income form -->
-    <div class="income-form-bg  hidden  bg-[rgba(0,0,0,.1)] fixed backdrop-blur-sm w-full h-[100vh] flex justify-center items-center top-0">
-        <form action="index.php" method="post" class="top-1/2 left-1/2  bg-white shadow-xl rounded-lg px-6 py-4 flex flex-col gap-1">
-            <label>amount:</label>
-            <input required type="text" name="income-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <label>description:</label>
-            <input required type="text" name="income-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <label>date:</label>
-            <input type="date" name="income-date" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <input type="submit" name="income-submit" class="bg-green-400 rounded-lg w-80 py-2 text-white">
-        </form>
-    </div>
-    <!-- expense form -->
-    <div class="expense-form-bg  hidden  bg-[rgba(0,0,0,.1)] fixed backdrop-blur-sm w-full h-[100vh] flex justify-center items-center top-0">
-        <form action="index.php" method="post" class="top-1/2 left-1/2  bg-white shadow-xl rounded-lg px-6 py-4 flex flex-col gap-1">
-            <label>amount:</label>
-            <input required type="text" name="expense-amount" placeholder="100.00" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <label>description:</label>
-            <input required type="text" name="expense-description" placeholder="from ?" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <label>date:</label>
-            <input type="date" name="expense-date" class="bg-gray-200 rounded-lg w-80 py-2 pl-3"><br><br>
-            <input type="submit" name="expense-submit" class="bg-green-400 rounded-lg w-80 py-2 text-white">
-        </form>
-    </div>
-
-    <?php
-    // 1. Re-run queries to fetch all records for the current month
-    // You need ID, amount, and date for the chart to work correctly.
-    $income_chart_sql = "SELECT id, amount, date FROM income WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE) ORDER BY date ASC";
-    $expense_chart_sql = "SELECT id, amount, date FROM expense WHERE MONTH(date) = MONTH(CURRENT_DATE) AND YEAR(date) = YEAR(CURRENT_DATE) ORDER BY date ASC";
-
-    $income_chart_result = mysqli_query($connect, $income_chart_sql);
-    $expense_chart_result = mysqli_query($connect, $expense_chart_sql);
-
-    $income_chart_data = [];
-    while ($row = mysqli_fetch_assoc($income_chart_result)) {
-        // Collect data, ensuring 'amount' is treated as a number in JS
-        $income_chart_data[] = ['date' => $row['date'], 'amount' => (float)$row['amount']];
-    }
-
-    $expense_chart_data = [];
-    while ($row = mysqli_fetch_assoc($expense_chart_result)) {
-        $expense_chart_data[] = ['date' => $row['date'], 'amount' => (float)$row['amount']];
-    }
-
-    // 2. Encode PHP arrays to JSON strings
-    $json_incomes = json_encode($income_chart_data);
-    $json_expenses = json_encode($expense_chart_data);
-    ?>
-    <script>
-        const incomeDataFromPHP = <?php echo $json_incomes; ?>;
-        const expenseDataFromPHP = <?php echo $json_expenses; ?>;
-    </script>
 </body>
-<script src="script.js"></script>
+<script src="login.js"></script>
 
 </html>
-<?php
-mysqli_close($connect);
-?>

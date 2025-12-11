@@ -1,3 +1,4 @@
+-- Active: 1764672841665@@127.0.0.1@3306@smart_wallet
 CREATE DATABASE smart_wallet;
 
 use smart_wallet;
@@ -14,12 +15,6 @@ TRUNCATE expense;
 
 SELECT sum(amount) FROM income;
 
-select * from income;
-
-ALTER TABLE income MODIFY COLUMN amount DECIMAL(6,2) NOT NULL;
-
-ALTER TABLE income MODIFY COLUMN date DATE NULL DEFAULT (CURRENT_DATE);
-
 CREATE TABLE expense(
     id INT PRIMARY KEY AUTO_INCREMENT,
     amount DECIMAL(6,2) NOT NULL,
@@ -28,10 +23,21 @@ CREATE TABLE expense(
 );
 
 SELECT * FROM income;
-INSERT INTO income (id , amount , description , date) VALUES (1, 33 , 'test', '2007-04-22');
-INSERT INTO income ( amount , description ) VALUES ( 33 , 'test');
+SELECT * FROM expense;
 
-DELETE FROM INCOME WHERE id = 2;
+ALTER TABLE income ADD user_id INT;
+ALTER TABLE expense ADD user_id INT;
 
-SELECT * FROM income WHERE MONTH(date)  = MONTH(CURRENT_DATE)
 
+CREATE TABLE users(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(250) NOT NULL UNIQUE,
+    password VARCHAR(250) NOT NULL
+)
+
+SELECT * FROM users
+
+TRUNCATE users
+
+INSERT INTO users(name , email , password) VALUES('gumball', 'imad@gmail.com','12345')
